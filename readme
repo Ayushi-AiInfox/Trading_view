@@ -1,0 +1,19 @@
+TradingView/
+    admin/
+        urls.py
+        views.py
+    templates/
+        index.html
+    manage.py
+    TradingView/
+        __init__.py
+        settings.py
+        urls.py
+        wsgi.py
+    accounts/
+        __init__.py
+        views.py
+        urls.py
+        forms.py
+        models.py
+    db.sqlite3
