@@ -6,6 +6,7 @@
     <title>Stock Price Prediction</title>
 
     <script src="https://s3.tradingview.com/tv.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
         body {
@@ -17,6 +18,22 @@
     </style>
 </head>
 <body>
+    {% for message in messages %}
+        <script>
+            Swal.fire({
+                position: 'center',
+                icon: "success",
+                title: "{{ message }}",
+                showConfirmButton: false,
+                timer: 1500
+            });
+        </script>
+    {% endfor %}
+    {% csrf_token %}
+    <a href="../../accounts/logout" class="logout-btn">Logout</a>
+
+
+
     <div class="container">
         <h2>Stock Chart for Apple (AAPL)</h2>
         <div id="tradingview-widget-container"></div>
@@ -40,7 +57,7 @@
             "studies": ["MACD",        // Allowed indicators
                     "RSI",         // Allowed indicators
                     "Moving Average"],
-            "hide_side_toolbar": false,  // Hides the side toolbar on left side
+            "hide_side_toolbar": true,  // Hides the side toolbar on left side
         });
     </script>
 </body>

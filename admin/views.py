@@ -1,22 +1,29 @@
-
-from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login
+from django.http import HttpResponse
+from django.shortcuts import redirect, render
+from django.views import View
+import jwt
 from django.contrib import messages
+from django.conf import settings
+from accounts.models import User  
+KEYS = getattr(settings, "KEY", None)
 
-def admin_login(request):
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        
-        user = authenticate(request, username=username, password=password)
-        
-        if user is not None:
-            if user.is_staff:  
-                login(request, user)
-                return redirect('admin_dashboard')  
-            else:
-                messages.error(request, "You are not authorized to access the admin dashboard.")
-        else:
-            messages.error(request, "Invalid credentials.")
+
+def AdminDashboardView(request):
+    if request.session.has_key('token'):
+        token = request.session.get('token')
+        try:
+            d = jwt.decode(token, key=KEYS, algorithms=['HS256'])
+            usr = User.objects.get(email = d.get("email"))
+            if d.get('method')!="verified" or usr.role!='admin':
+                return redirect('../../accounts/login')
+        except:
+            return redirect('../../accounts/login')
+        if 'message' in request.session:
+            messages.success(request, "Login successful!")
+            del request.session['message'] 
     
-    return render(request, 'accounts/login.html')
+        return render(request,'admin_dashboard.html')
+    else:
+        return redirect('../../accounts/login')
+    
+

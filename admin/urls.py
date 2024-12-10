@@ -1,11 +1,13 @@
-
-
 from django.urls import path
 from . import views
+from accounts import views as accounts_views
+from django.contrib.auth import views as auth_views
 
 urlpatterns = [
-    path('login/', views.admin_login, name='login'),
-    path('admin_dashboard/', views.admin_dashboard, name='admin_dashboard'),
-]
+  
+    path('dashboard/', views.AdminDashboardView, name='admin_dashboard'),
 
+   
+
+]
 

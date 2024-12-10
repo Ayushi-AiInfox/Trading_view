@@ -9,6 +9,8 @@ BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-!nq9x^t8v16n@9q+#v$zjw5z^ub2o@b0c_o0+%p+ix#o%nrbf5'
 
+KEY= "SADFSyFSv-aD&WF9AWEgBLA1a323%423RB#JfVD@-2FeNEJtNVIER=EVER%n5"
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -52,7 +54,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'accounts'
+    'accounts',
+    'rest_framework',
+    'rest_framework_simplejwt',
+    'TradingView',
+    
+   
    
 ]
 
@@ -66,6 +73,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
+    
 ]
 
 ROOT_URLCONF = 'TradingView.urls'
@@ -74,7 +82,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            BASE_DIR / 'templates',  # Ensure this is pointing to your 'templates' folder
+            BASE_DIR / 'templates', 
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -128,7 +136,10 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, images)
 STATIC_URL = '/static/'
-
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+    "/var/www/static/",
+]
 # Media files
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
@@ -140,3 +151,14 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Example for configuring the admin title, header, etc.
 ADMIN_SITE_HEADER = 'TradingView Admin'
 ADMIN_SITE_TITLE = 'TradingView Admin Dashboard'
+
+
+
+# Email configuration
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'  # Or your email provider
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'ats789456123@gmail.com'  
+EMAIL_HOST_PASSWORD = 'vxxv kwsa kekc qtnm '
+
