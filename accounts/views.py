@@ -27,7 +27,6 @@ KEYS = getattr(settings, "KEY", None)
 def LoginView( request):
     message= request.session.get('message')
     message1 = request.session.get("message1")
-
     try:
         del request.session['message']
     except:
@@ -36,8 +35,6 @@ def LoginView( request):
         del request.session['message1']
     except:
         pass
-
-
     if request.session.has_key('token'):
         token = request.session.get('token')
         try:
@@ -55,20 +52,14 @@ def LoginView( request):
     if request.method=='POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
-
         if not username or not password:
             messages.error(request, "Please fill in both username and password.")
             return redirect('login')
-
         user = authenticate(request, username=username, password=password)
-    
-
         if user is not None:
-            print("success")
             login(request, user)
             request.session['role'] = user.role
             request.session['username'] = user.username
-
             payload = {
                 'email': user.email,
                 'method': 'verified',
@@ -76,11 +67,7 @@ def LoginView( request):
                 'exp': datetime.utcnow() + timedelta(days=1)
             }         
             token = jwt.encode(payload=payload,key=KEYS,algorithm='HS256')
-            print("token--",token)
-
-           
             request.session['token'] = token
-
             if user.role == "admin":
                 request.session['message']="success"
                 return redirect('../../admin/dashboard')

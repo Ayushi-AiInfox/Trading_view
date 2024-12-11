@@ -6,8 +6,8 @@ from django.contrib.auth.decorators import login_required
 
 # View for the root path to redirect to the login page
 def root_redirect(request):
-    if request.user.is_authenticated:
-        return HttpResponseRedirect('accounts/login')    
+    
+    return HttpResponseRedirect('accounts/login')    
     
 
 urlpatterns = [

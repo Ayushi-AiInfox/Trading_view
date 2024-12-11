@@ -155,3 +155,7 @@
       height: auto;
   }
   }
+
+  #header-toolbar-compare{
+    display: none;
+  }

@@ -13,17 +13,7 @@
 <body>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-  {% if message %}
-  <script>
-    Swal.fire({
-      position: "center",
-      icon: "success",
-      title: "{{ message }}",
-      showConfirmButton: false,
-      timer: 1500
-    });
-  </script>
-  {% endif %}
+ 
 
 
   
@@ -42,7 +32,7 @@
 
 {% if message3 %}
 <script>
-  console.log("Message: ", "{{ message }}");
+  
   Swal.fire({
       position: 'center',
       icon: "success",
@@ -89,7 +79,7 @@
           
           <!-- <a href="#">Forgot your password?</a> -->
         </div>
-        <button type="submit" class="input-field">Login</button>
+        <button type="submit" class="btn">Login</button>
       </form>
       <p class="register-link">Don't have an account? <a href="../../accounts/signup">Register</a></p>
     </div>

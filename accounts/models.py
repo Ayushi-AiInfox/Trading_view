@@ -17,4 +17,39 @@ class User(AbstractUser):
     activation_date=models.CharField(max_length=200,default='N/A')
     class Meta:
         db_table='users'
+
+
+class Symbols(models.Model):
+    symbol = models.CharField(max_length=200)
+    status = models.CharField(max_length=100,default='1')
+    class Meta:
+        db_table = 'symbols'
+
+class PortfolioSettings(models.Model):
+    interval = models.CharField(max_length=100)
+    symbol = models.CharField(max_length = 100)
+    indicators = models.TextField()
+    class Meta:
+        db_table = 'portfolio_settings'
+
+
+class OverView(models.Model):
+    net_profit = models.CharField(max_length=200)
+    total_closed_trades = models.CharField(max_length=200)
+    percent_profitable = models.CharField(max_length=200)
+    profit_factor = models.CharField(max_length=200)
+    max_dropdown = models.CharField(max_length=200)
+    avg_trades = models.CharField(max_length=200)
+    gross_profit = models.CharField(max_length=200)
+    gross_loss = models.CharField(max_length=200)
+    buy_hold = models.CharField(max_length=200)
+    avg_winning_trades = models.CharField(max_length=200)
+    avg_lossing_trades = models.CharField(max_length=200)
+    total_open_trades = models.CharField(max_length=200)
+    status = models.CharField(max_length=200)
+
+    class Meta:
+        db_table = 'overview'
+
+
         
