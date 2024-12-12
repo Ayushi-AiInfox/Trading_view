@@ -1,17 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    {% load static %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css" integrity="sha512-5Hs3dF2AEPkpNAR7UiOHba+lRSJNeM2ECkwxUIxC1Q/FLycGTbNapWXB4tP889k5T5Ju8fs4b1P5z/iB4nMfSQ==" crossorigin="anzonymous" referrerpolicy="no-referrer" />
     <script src="https://s3.tradingview.com/tv.js"></script>
+    <link href="{% static 'assets/css/new.css' %}" rel="stylesheet" />
     
     <title>Dashboard</title>
-    {% load static %}
+    
 
-    <style>
-        body {
+    <!-- <style>
+
+
+body {
     margin: 0;
     font-family: "Rubik", sans-serif;
     background: #111212;
@@ -263,8 +267,6 @@
     margin-left: 10px;
 }
 
-
-
 .timer span {
     font-size: 18px;
     margin: 0 5px;
@@ -278,17 +280,18 @@
     cursor: pointer;
 }
 
-/* Timer Dropdown Styles */
 .timer-dropdown {
     position: absolute;
     top: 35px;
+    height: 265px;
+    overflow: scroll;
     left: 0;
     background-color: white;
     border: 1px solid #ccc;
     width: 160px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     display: none;
-    z-index: 10;
+    z-index: 999999999999;
 }
 
 .timer-dropdown option {
@@ -307,7 +310,6 @@
     background-color: #f0f0f0;
 }
 
-/* Selected Option Styling (Star) */
 .timer-dropdown .selected {
     color: gold;
 }
@@ -424,11 +426,7 @@ i.fa-solid.fa-magnifying-glass {
     font-weight: 400;
   }
   
-  /* tr:nth-child(even) {
-    background-color: #f9f9f9;
-  }
-   */
- 
+
   .small-text {
     font-size: 0.85em;
     color: rgb(255, 0, 0);
@@ -466,31 +464,27 @@ i.fa-solid.fa-magnifying-glass {
   }
 
 
-   /* Target the scrollbar */
    ::-webkit-scrollbar {
-    width: 5px; /* Width of the vertical scrollbar */
-    height: 5px; /* Height of the horizontal scrollbar */
+    width: 5px;
+    height: 5px; 
   }
 
-  /* The scrollbar track (background) */
+  
   ::-webkit-scrollbar-track {
     background: transparent;
-    border-radius: 5px; /* Optional rounded corners */
+    border-radius: 5px; 
   }
 
-  /* The scrollbar thumb (scroll handle) */
   ::-webkit-scrollbar-thumb {
-    background: transparent; /* Scrollbar color */
+    background: transparent; 
     border-radius: 5px;
   }
 
-  /* Scrollbar thumb on hover */
+
   ::-webkit-scrollbar-thumb:hover {
     background: transparent;
   }
 
-
-  /* Add this to your CSS */
 
     #content1 .row-content {
         overflow-x: auto; /* Enables horizontal scrolling */
@@ -502,8 +496,13 @@ i.fa-solid.fa-magnifying-glass {
         margin-right: 10px; /* Adds some space between boxes */
     }
 
-
-    </style>
+    .tab-button {
+    cursor: pointer;
+  }
+  .tab-button.active {
+    color: #00e4a3;
+}
+    </style> -->
 </head>
 <body>
 
@@ -518,11 +517,9 @@ i.fa-solid.fa-magnifying-glass {
         </div>
         <input type="text" id="searchInput" class="search-bar" placeholder="Search for symbols..." onkeyup="filterSymbols()">
         <div class="symbol-list" id="symbolList">
-            <div class="symbol-item">MSFT - Microsoft Corporation</div>
-            <div class="symbol-item">AAPL - Apple Inc.</div>
-            <div class="symbol-item">GOOG - Alphabet Inc.</div>
-            <div class="symbol-item">AMZN - Amazon.com Inc.</div>
-            <div class="symbol-item">TSLA - Tesla Inc.</div>
+            {% for s in symbols %}
+            <div class="symbol-item" onclick="saveSymbolToDB('{{s}}')">{{s}}</div>
+            {% endfor %}
             <!-- Add more symbols as needed -->
         </div>
     </div>
@@ -551,7 +548,7 @@ i.fa-solid.fa-magnifying-glass {
                     <div class="search1">
                         <div class="serch-main" onclick="openPopup()">
                             <p class="p-icon"><i class="fa-solid fa-magnifying-glass"></i></p>
-                            <span>MSFT</span>
+                            <span>{{portfolio.symbol}}</span>
                         </div>
                         <div class="serch-dropdown" id="search1-dropdown">
                             <input type="text" placeholder="Search...">
@@ -566,20 +563,17 @@ i.fa-solid.fa-magnifying-glass {
                         <span class="sec"></span>
         
                         <button class="dropdown-btn" onclick="toggleTimerDropdown(event)">
-                            1 minute <i class="fa fa-caret-down"></i>
+                            {{interval_data}} <i class="fa fa-caret-down"></i>
                         </button>
-        
-                        <!-- Timer Dropdown -->
-                        <div class="timer-dropdown" id="timer-dropdown">
+                        <div class="timer-dropdown" id="timer-dropdown" >
                             <option value="1m">1 minute</option>
                             <option value="2m">2 minutes</option>
-                            <option value="3m">3 minutes</option>
                             <option value="5m">5 minutes</option>
                             <option value="10m">10 minutes</option>
                             <option value="15m">15 minutes</option>
                             <option value="30m">30 minutes</option>
                             <option value="1h">1 hour</option>
-                            <option value="2h">2 hours</option>
+                            <option value="1d">1 day</option>
                         </div>
                     </div>  
         
@@ -587,7 +581,7 @@ i.fa-solid.fa-magnifying-glass {
                     <div class="serach-2">
                         <div class="serch-main" onclick="openPopup()">
                             <p><i class="fa-solid fa-chart-bar"></i></p>
-                            <span>Indecator</span>
+                            <span>Indicator</span>
                         </div>
                         <div class="serch-dropdown" id="search2-dropdown">
                             <input type="text" placeholder="Search...">
@@ -595,63 +589,57 @@ i.fa-solid.fa-magnifying-glass {
                         </div>
                     </div>
                 </div>
-
-               
- 
-                    <div id="tradingview-widget-container"></div>
-               
+                    <div id="tradingview-widget-container"></div> 
             </div>
         </div>
         <div class="stock-info">
             <div class="top-bar bottom-bar">
-              <p id="test1">Overview</p>
-              <p id="test2">List Of Trade</p>
-              <p id="test3">Performance</p>
+              <p id="test1" class="tab-button active">Overview</p>
+              <p id="test2" class="tab-button">List Of Trade</p> 
             </div>
-          
             <div class="content-bottom">
               <div id="content1" class="content" style="display:none;">
                 <div class="row-content">
                     <div class="box-content">
-                        <p>Net Profit <i class="fa-solid fa-circle-info"></i></p>
-                        <p class="sm-text">2,800</p>
+                        <p>Total Return <i class="fa-solid fa-circle-info"></i></p>
+                        <p class="sm-text" style="color: {% if data_dict.Return < 0 %}red{% else %}#00e4a3{% endif %};">{{data_dict.Return}} %</p>
                     </div>
                     <div class="box-content">
                         <p>Total Close Trade <i class="fa-solid fa-circle-info"></i></p>
-                        <p class="sm-text">58</p>
+                        <p class="sm-text">{{data_dict.total_trades}}</p>
                     </div>
                     <div class="box-content">
-                        <p>percent Profitable <i class="fa-solid fa-circle-info"></i></p>
-                        <p class="sm-text">36.52</p>
+                        <p>Best Trades <i class="fa-solid fa-circle-info"></i></p>
+                        <p class="sm-text" style="color: {% if data_dict.best_trades < 0 %}red{% else %}#00e4a3{% endif %};">{{data_dict.best_trades}} %</p>
                     </div>
                     <div class="box-content">
-                        <p>Profit Fector <i class="fa-solid fa-circle-info"></i></p>
-                        <p class="sm-text">0.958</p>
+                        <p>Buy Hold Return <i class="fa-solid fa-circle-info"></i></p>
+                        <p class="sm-text" style="color: {% if data_dict.buy_hold_return < 0 %}red{% else %}#00e4a3{% endif %};">{{data_dict.buy_hold_return}} %</p>
                     </div>
                     <div class="box-content">
                         <p>Max Dropdown <i class="fa-solid fa-circle-info"></i></p>
-                        <p class="sm-text">18.56%</p>
+                        <p class="sm-text" style="color: {% if data_dict.Max_dropdown < 0 %}red{% else %}#00e4a3{% endif %};">{{data_dict.Max_dropdown}} %</p>
                     </div>
                     
                     <div class="box-content">
-                        <p>Avg Trade <i class="fa-solid fa-circle-info"></i></p>
-                        <p class="sm-text">2,800</p>
+                        <p>Win Rate <i class="fa-solid fa-circle-info"></i></p>
+                        <p class="sm-text" style="color: {% if data_dict.win_rate < 0 %}red{% else %}#00e4a3{% endif %};">{{data_dict.win_rate}}%</p>
                     </div>
                     <div class="box-content">
-                        <p>Avg # <i class="fa-solid fa-circle-info"></i></p>
-                        <p class="sm-text">12</p>
+                        <p>Max dropdown duration <i class="fa-solid fa-circle-info"></i></p>
+                        <p class="sm-text">{{data_dict.max_dropdown_duration}}</p>
                     </div>
                     <div class="box-content">
-                        <p>Net Profit <i class="fa-solid fa-circle-info"></i></p>
-                        <p class="sm-text">45%</p>
+                        <p>Average Dropdown duration <i class="fa-solid fa-circle-info"></i></p>
+                        <p class="sm-text">{{data_dict.average_dropdown_duration}}</p>
                     </div>
                     <div class="box-content">
-                        <p>Total Trade <i class="fa-solid fa-circle-info"></i></p>
-                        <p class="sm-text">31</p>
+                        <p>Worst Trades <i class="fa-solid fa-circle-info"></i></p>
+                        <p class="sm-text" style="color: {% if data_dict.worst_trades < 0 %}red{% else %}#00e4a3{% endif %};">{{data_dict.worst_trades}}</p>
                     </div>
                     <div class="box-content">
-                        <p>Total Loss <i class="fa-solid fa-circle-info"></i></p>
-                        <p class="sm-text">15%</p>
+                        <p>Profit Factor <i class="fa-solid fa-circle-info"></i></p>
+                        <p class="sm-text" style="color: {% if data_dict.profit_factor < 0 %}red{% else %}#00e4a3{% endif %};">{{data_dict.profit_factor}} %</p>
                     </div>
                 </div>
               </div>
@@ -660,113 +648,32 @@ i.fa-solid.fa-magnifying-glass {
                     <table>
                       <thead>
                         <tr>
-                          <th>Trade #</th>
-                          <th>Type</th>
-                          <th>Signal</th>
-                          <th>Date/Time</th>
-                          <th>Price</th>
-                          <th>Contracts</th>
-                          <th>Profit</th>
-                          <th>Cum. Profit</th>
-                          <th>Run-up</th>
-                          <th>Drawdown</th>
+                          <th>Entry Time</th>
+                          <th>Exit Time</th>
+                          <th>Entry Price</th>
+                          <th>Exit Price</th>
+                          <th>PnL</th>
+                          <th>Returns</th>
+                          <th>Duration</th>
                         </tr>
                       </thead>
                       <tbody>
+                        {% for data in trades_data%}
                         <tr>
-                          <td>2801</td>
-                          <td>Exit Short</td>
-                          <td>Open</td>
-                          <td>2024-12-10</td>
-                          <td>6,057.59 USD</td>
-                          <td>15.5</td>
-                          <td>351.69 USD<br><span class="small-text">0.37%</span></td>
-                          <td>-61,086.59 USD<br><span class="small-text">0.04%</span></td>
-                          <td>429.35 USD<br><span class="small-text">0.46%</span></td>
-                          <td>121.06 USD<br><span class="small-text">0.13%</span></td>
+                          <td>{{data.EntryTime|date:"Y-m-d H:i:s"}}</td>
+                          <td>{{data.ExitTime|date:"Y-m-d H:i:s"}}</td>
+                          <td>{{data.EntryPrice}}</td>
+                          <td>{{data.ExitPrice}}</td>
+                          <td style="color: {% if data.PnL < 0 %}red{% else %}#00e4a3{% endif %};">{{data.PnL}}</td>
+                          <td style="color: {% if data.ReturnPct < 0 %}red{% else %}#00e4a3{% endif %};">{{data.ReturnPct}}</td>
+                          <td>{{data.Duration}}</td>
                         </tr>
-                        <tr>
-                          <td>2800</td>
-                          <td>Entry Short</td>
-                          <td>BarDn</td>
-                          <td>2024-12-10</td>
-                          <td>6,057.59 USD</td>
-                          <td>15.5</td>
-                          <td>270.94 USD<br><span class="small-text">0.29%</span></td>
-                          <td>-61,438.29 USD<br><span class="small-text">0.03%</span></td>
-                          <td>927.83 USD<br><span class="small-text">0.99%</span></td>
-                          <td>104.16 USD<br><span class="small-text">0.11%</span></td>
-                        </tr>
-                        <!-- Add more rows here -->
+                  {% endfor %}
                       </tbody>
                     </table>
                   </div>    
               </div>
 
-              <div id="content3" class="content" style="display:none;">
-                <div class="table-wrapper">
-                    <table class="data-table">
-                      <thead>
-                        <tr>
-                          <th>Title</th>
-                          <th>All</th>
-                          <th>Long</th>
-                          <th>Short</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <td>Net Profit</td>
-                          <td class="negative-value">-61,438.29 USD</td>
-                          <td>247,249.20 USD</td>
-                          <td class="negative-value">-308,687.49 USD</td>
-                        </tr>
-                        <tr>
-                          <td>Gross Profit</td>
-                          <td>2,132,038.62 USD</td>
-                          <td>1,295,206.16 USD</td>
-                          <td>836,832.06 USD</td>
-                        </tr>
-                        <tr>
-                          <td>Gross Loss</td>
-                          <td>2,193,476.91 USD</td>
-                          <td>1,047,957.35 USD</td>
-                          <td>1,145,519.56 USD</td>
-                        </tr>
-                        <tr>
-                          <td>Max Run-up</td>
-                          <td>208,371.04 USD</td>
-                          <td>104.80%</td>
-                          <td>17.69%</td>
-                        </tr>
-                        <tr>
-                          <td>Max Drawdown</td>
-                          <td>262,681.44 USD</td>
-                          <td>22.34%</td>
-                          <td>22.34%</td>
-                        </tr>
-                        <tr>
-                          <td>Buy & Hold Return</td>
-                          <td>92,869,853.25 USD</td>
-                          <td>9,286.9%</td>
-                          <td>9,286.9%</td>
-                        </tr>
-                        <tr>
-                          <td>Sharpe Ratio</td>
-                          <td>-0.385</td>
-                          <td>-0.385</td>
-                          <td>-0.426</td>
-                        </tr>
-                        <tr>
-                          <td>Sortino Ratio</td>
-                          <td>-0.426</td>
-                          <td>-0.426</td>
-                          <td>-0.426</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-              </div>
             </div>
           </div>
           
@@ -775,6 +682,9 @@ i.fa-solid.fa-magnifying-glass {
 </div>
 
 <script>
+
+
+
     const profile = document.getElementById('profile');
     const dropdown = document.getElementById('dropdown');
 
@@ -791,21 +701,86 @@ i.fa-solid.fa-magnifying-glass {
 
 
 <script>
-    // Function to toggle search dropdown visibility
+
+    function saveSymbolToDB(symbol) {
+        console.log(symbol);
+        fetch('../../admin/save-symbol/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken(), 
+            },
+            body: JSON.stringify({ symbol: symbol })
+        })
+        .then(response => {
+            if (response.ok) {
+                location.reload(true);
+                return response.json();
+                
+
+            } else {
+                throw new Error('Failed to save symbol.');
+            }
+        })
+        .then(data => {
+            console.log('Symbol saved successfully:', data);
+        })
+        .catch(error => {
+            console.error('Error saving symbol:', error);
+        });
+    }
+
+</script>
+
+
+<script>
+
+
+function saveInterval(interval) {
+    console.log(interval);
+    fetch('/admin/save-interval/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken() // Add CSRF token for security
+        },
+        body: JSON.stringify({ interval: interval })
+    })
+    .then(response => {
+        if (response.ok) {
+            location.reload(true);
+            return response.json();
+        } else {
+            throw new Error('Failed to save interval');
+        }
+    })
+    .then(data => {
+        console.log('Interval saved:', data);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+
+</script>
+
+
+<script>
+
     function toggleSearchDropdown(id) {
         const dropdown = document.getElementById(id);
         const isCurrentlyVisible = dropdown.style.display === 'block';
         
-        // Close all dropdowns
+
         closeAllDropdowns();
         
-        // If the dropdown is not already open, open it
+ 
         if (!isCurrentlyVisible) {
             dropdown.style.display = 'block';
         }
     }
 
-    // Close all search dropdowns
+ 
     function closeAllDropdowns() {
         const dropdowns = document.querySelectorAll('.serch-dropdown');
         dropdowns.forEach(dropdown => {
@@ -813,18 +788,16 @@ i.fa-solid.fa-magnifying-glass {
         });
     }
 
-    // Close the dropdown if clicked outside
     document.addEventListener('click', function(event) {
         const search1Dropdown = document.getElementById('search1-dropdown');
         const search2Dropdown = document.getElementById('search2-dropdown');
         
-        // Check if the click was outside the search input areas
+
         if (!event.target.closest('.search1') && !event.target.closest('.serach-2')) {
             closeAllDropdowns();
         }
     });
 
-    // Search function (for demonstration)
     function searchFunction() {
         const searchQuery = event.target.previousElementSibling.value;
         alert('Searching for: ' + searchQuery);
@@ -877,7 +850,14 @@ i.fa-solid.fa-magnifying-glass {
             hour = 1;
         } else if (selectedOption === '2h') {
             hour = 2;
+        }else if (selectedOption === '4h') {
+            hour = 4;
+        }else if (selectedOption === '1d') {
+            day = 1;
         }
+
+        saveInterval(selectedOption);
+
 
         // Update the timer display
         document.querySelector('.hour').textContent = hour ? hour + 'h' : '';
@@ -957,44 +937,73 @@ function filterSymbols() {
         }
     });
 }
-
 </script>
 
+<!-- <script>
+document.addEventListener("DOMContentLoaded", function () {
+  document.getElementById("content1").style.display = "block";
+  document.getElementById("content2").style.display = "none";
+  document.getElementById("test1").classList.add("active");
+});
+
+function setActiveTab(clickedTab, contentToShow) {
+  document.querySelectorAll(".tab-button").forEach(button => {
+    button.classList.remove("active");
+  });
+  clickedTab.classList.add("active");
+  document.getElementById("content1").style.display = "none";
+  document.getElementById("content2").style.display = "none";
+  document.getElementById(contentToShow).style.display = "block";
+}
+document.getElementById("test1").addEventListener("click", function () {
+  setActiveTab(this, "content1");
+});
+document.getElementById("test2").addEventListener("click", function () {
+  setActiveTab(this, "content2");
+});
+</script> -->
+  
 <script>
-    // Set default content display
-    document.addEventListener("DOMContentLoaded", function() {
+    document.addEventListener("DOMContentLoaded", function () {
       document.getElementById("content1").style.display = "block";
       document.getElementById("content2").style.display = "none";
-      document.getElementById("content3").style.display = "none";
+      document.getElementById("test1").classList.add("active");
     });
-  
-    document.getElementById("test1").addEventListener("click", function() {
-      document.getElementById("content1").style.display = "block";
-      document.getElementById("content2").style.display = "none";
-      document.getElementById("content3").style.display = "none";
-    });
-  
-    document.getElementById("test2").addEventListener("click", function() {
-      document.getElementById("content2").style.display = "block";
-      document.getElementById("content1").style.display = "none";
-      document.getElementById("content3").style.display = "none";
-    });
-  
-    document.getElementById("test3").addEventListener("click", function() {
-      document.getElementById("content3").style.display = "block";
+    
+    function setActiveTab(clickedTab, contentToShow) {
+      // Remove 'active' class and reset color for all tabs
+      document.querySelectorAll(".tab-button").forEach(button => {
+        button.classList.remove("active");
+      });
+      
+      // Add 'active' class and set color for the clicked tab
+      clickedTab.classList.add("active");
+    
+      // Hide all content and show only the selected tab's content
       document.getElementById("content1").style.display = "none";
       document.getElementById("content2").style.display = "none";
+      document.getElementById(contentToShow).style.display = "block";
+    }
+    
+    // Event listeners for tabs
+    document.getElementById("test1").addEventListener("click", function () {
+      setActiveTab(this, "content1");
     });
-  </script>
-  
-
+    document.getElementById("test2").addEventListener("click", function () {
+      setActiveTab(this, "content2");
+    });
+    </script>
+    
 
 <script>
+    let symbol = "MSFT";
+    let interval = "30";
+
     new TradingView.widget({
         width: "100%",
         height: "100%",
-        symbol: "MSFT",
-        interval: "60",
+        symbol: "{{ portfolio.symbol|escapejs }}",
+        interval: "{{ portfolio.interval|escapejs }}",
         timezone: "Etc/UTC",
         theme: "dark",
         style: "1",
@@ -1004,28 +1013,82 @@ function filterSymbols() {
         allow_symbol_change: true,
         container_id: "tradingview-widget-container",
         hide_side_toolbar: true,
-        hide_top_toolbar :false,
+        hide_top_toolbar :true,
         studies: [
             "MACD",
             "RSI",
             "Moving Average"
         ],
-        show_popup_button: true,
+        show_popup_button: false,
         popup_width: "1000",
         popup_height: "650",
         withdateranges: true,
         watchlist: [],
         custom_css_url: "",
         debug: false,
-        autosize: true,
+        autosize: false,
         isTransparent: false,
         details: true,
         news: ["headlines"],
         hide_legend: false,
         save_image: false,
- 
-       
     });
+</script>
+<script>
+function openPopup() {
+    document.getElementById('popup').style.display = 'block';
+}
+
+function closePopup() {
+    document.getElementById('popup').style.display = 'none';
+}
+
+function filterSymbols() {
+    const input = document.getElementById('searchInput').value.toLowerCase();
+    const symbols = document.querySelectorAll('.symbol-item');
+
+    symbols.forEach(symbol => {
+        const text = symbol.textContent.toLowerCase();
+        symbol.style.display = text.includes(input) ? 'block' : 'none';
+    });
+}
+
+function selectSymbol(symbolText) {
+    const activeSearchMain = document.querySelector('.serch-main.active');
+    if (activeSearchMain) {
+        const spanElement = activeSearchMain.querySelector('span');
+        if (spanElement) {
+            spanElement.textContent = symbolText;
+        }
+    }
+
+    closePopup();
+}
+
+const symbolItems = document.querySelectorAll('.symbol-item');
+symbolItems.forEach(item => {
+    item.addEventListener('click', function () {
+        const symbolText = this.textContent.split(' - ')[0]; // Get the symbol code (e.g., MSFT)
+        selectSymbol(symbolText);
+    });
+});
+
+const searchMainDivs = document.querySelectorAll('.serch-main');
+searchMainDivs.forEach(div => {
+    div.addEventListener('click', function () {
+        searchMainDivs.forEach(d => d.classList.remove('active'));
+        this.classList.add('active');
+        openPopup();
+    });
+});
+
+
+
+function getCSRFToken() {
+        const cookieValue = document.cookie.split('; ').find(row => row.startsWith('csrftoken='));
+        return cookieValue ? cookieValue.split('=')[1] : '';
+}
+
 </script>
 </body>
 </html>

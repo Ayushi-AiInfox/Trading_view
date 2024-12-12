@@ -159,3 +159,11 @@
   #header-toolbar-compare{
     display: none;
   }
+  .top-bar .active {
+    color: #00e4a3 !important;
+}
+
+.tab-button.active {
+  background-color: red;
+  color: white;
+}

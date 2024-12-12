@@ -1,29 +1,20 @@
-import yfinance as yf
 import pandas as pd
+import yfinance as yf
 
-# Fetch OHLCV data for a specific stock (e.g., Apple Inc.)
-ticker = "AAPL"
-data = yf.download(ticker, start="2023-01-01", end="2024-12-11", interval="1d")
-data = data.drop(columns=('Adj Close',ticker))
-data.columns = [col[0] for col in data.columns]
-from backtesting import Backtest, Strategy
-from backtesting.lib import crossover
-from backtesting.test import SMA
+# URL containing S&P 500 tickers
+url = "https://raw.githubusercontent.com/datasets/s-and-p-500-companies/master/data/constituents.csv"
+sp500_data = pd.read_csv(url)
 
+# Get the list of symbols
+sp500_symbols = sp500_data['Symbol'].tolist()
 
+# Validate using yfinance
+valid_symbols = []
+for symbol in sp500_symbols:
+    try:
+        yf.Ticker(symbol)  # Validate the ticker
+        valid_symbols.append(symbol)
+    except Exception as e:
+        print(f"Invalid symbol: {symbol}, Error: {e}")
 
-class SmaCross(Strategy):
-    def init(self):
-        price = self.data.Close
-        self.ma1 = self.I(SMA, price, 10)
-        self.ma2 = self.I(SMA, price, 20)
-
-    def next(self):
-        if crossover(self.ma1, self.ma2):
-            self.buy()
-        elif crossover(self.ma2, self.ma1):
-            self.sell()
-bt = Backtest(data, SmaCross, commission=.002,
-              exclusive_orders=True,cash=10000000)
-stats = bt.run()
-print(stats)
+print(valid_symbols)  # List of validated tickers
