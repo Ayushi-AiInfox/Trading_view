@@ -50,43 +50,40 @@
                         </div>
                     </div> -->
                 </div>
-                    <div id="tradingview-widget-container"></div> 
+                    
+                    <div id="trading-chart-wrapper">
+                        <div id="tradingview-widget-container">
+                        
+                        </div> 
+                        <!-- Trade Info Dashboard -->
+                        <div id="trade-info-dashboard">
+                          <h3 class="text-center">Pivotal Table</h3>
+                          <table class="trade-table">
+                            <tr>
+                              <th>Interval</th>
+                              <th>Action</th>
+                              <th>Price</th>
+                              <th>Timestamp</th>
+                            </tr>
+
+                            {% for i in pivotal_data %}
+                            <tr>
+                              <td>Chart</td>
+                              <td>Long</td>
+                              <td>{{i.price}}</td>
+                              <td>{{i.time}}</td>
+                            </tr>
+                            {% endfor %}
+                          </table>
+                        </div>
+                      </div>
+
+
+                   
             </div>
         </div>
 
-        <div id="chart-container">
-            <!-- Pivotal Dashboard -->
-            <div id="pivotal-dashboard">
-              <h3>Pivotal Dashboard</h3>
-              <table>
-                <tr>
-                  <th>Timeframe</th>
-                  <th>Trade</th>
-                  <th>Price</th>
-                  <th>Date and Time</th>
-                </tr>
-                <tr>
-                  <td>Chart</td>
-                  <td>Long</td>
-                  <td>5929.03</td>
-                  <td>Nov 6/24 9:30 AM</td>
-                </tr>
-                <tr>
-                  <td>Chart</td>
-                  <td>Long</td>
-                  <td>5917.03</td>
-                  <td>Nov 6/24 9:30 AM</td>
-                </tr>
-                <tr>
-                  <td>Chart</td>
-                  <td>Long</td>
-                  <td>5929.03</td>
-                  <td>Nov 6/24 9:30 AM</td>
-                </tr>
-              </table>
-            </div>
-          </div>
-          
+        
         <!-- <div class="stock-info">
             <div class="top-bar bottom-bar">
               <p id="test1" class="tab-button active">Overview</p>
@@ -175,6 +172,37 @@
     </div>
   
 </div>
+
+<!-- position chart -->
+<script>
+    // Initialize chart
+    const chartWrapper = document.getElementById('trading-chart-wrapper');
+    const tradingChart = LightweightCharts.createChart(chartWrapper, {
+      layout: {
+        backgroundColor: '#1E1E1E', // Dark theme
+        textColor: '#DDD',
+      },
+      grid: {
+        vertLines: { color: '#444' },
+        horzLines: { color: '#444' },
+      },
+      width: chartWrapper.offsetWidth,
+      height: chartWrapper.offsetHeight,
+      timeScale: { timeVisible: true },
+    });
+  
+    // Add candlestick series
+    const priceSeries = tradingChart.addCandlestickSeries({
+      upColor: '#26A69A',
+      downColor: '#EF5350',
+      borderVisible: false,
+      wickUpColor: '#26A69A',
+      wickDownColor: '#EF5350',
+    });
+  
+
+
+  </script>
 
 <script>
 
@@ -303,14 +331,13 @@ function saveInterval(interval) {
 
 
 <script>
-    // Function to toggle the timer dropdown
+    
     function toggleTimerDropdown(event) {
         const dropdown = document.getElementById('timer-dropdown');
         dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
-        event.stopPropagation(); // Prevent the dropdown from closing when clicking inside
+        event.stopPropagation(); 
     }
 
-    // Close the dropdown if clicked outside
     document.addEventListener('click', function(event) {
         const dropdown = document.getElementById('timer-dropdown');
         const button = document.querySelector('.dropdown-btn');
@@ -319,33 +346,24 @@ function saveInterval(interval) {
         }
     });
 
-    // Function to update the timer based on selected option
     function updateTimer(selectedOption) {
         const timerDisplay = document.querySelector('.timer');
         let hour = 0;
         let minute = 0;
         let second = 0;
-
-       
         if (selectedOption === '1d') {
             day = 1;
         }else if (selectedOption === '5d'){
             day= 5;
         }
-
         saveInterval(selectedOption);
 
-
-        // Update the timer display
         document.querySelector('.hour').textContent = hour ? hour + 'h' : '';
         document.querySelector('.min').textContent = minute ? minute + 'm' : '';
         document.querySelector('.sec').textContent = second ? second : '';
-
-        // Change the button text to show the selected time
         document.querySelector('.dropdown-btn').innerHTML = `${hour ? hour + ' hour' : ''} ${minute ? minute + ' minutes' : ''} <i class="fa fa-caret-down"></i>`;
     }
 
-    // Set event listeners for the dropdown options
     const options = document.querySelectorAll('.timer-dropdown option');
     options.forEach(option => {
         option.addEventListener('click', function() {
@@ -386,12 +404,11 @@ function openPopup() {
     popup.style.top = '50%';
     popup.style.left = '50%';
     popup.style.transform = 'translate(-50%, -50%)';
-    popup.style.zIndex = '9999'; // Ensure it appears on top
+    popup.style.zIndex = '9999'; 
 
     document.body.classList.add('blur');
 }
 
-// Function to close the popup
 function closePopup() {
     const popup = document.getElementById('popup');
     popup.style.display = 'none';
@@ -400,7 +417,7 @@ function closePopup() {
 
 }
 
-// Function to filter symbols in the popup
+
 function filterSymbols() {
     const input = document.getElementById('searchInput').value.toLowerCase();
     const symbols = document.querySelectorAll('.symbol-item');
@@ -416,29 +433,6 @@ function filterSymbols() {
 }
 </script>
 
-<!-- <script>
-document.addEventListener("DOMContentLoaded", function () {
-  document.getElementById("content1").style.display = "block";
-  document.getElementById("content2").style.display = "none";
-  document.getElementById("test1").classList.add("active");
-});
-
-function setActiveTab(clickedTab, contentToShow) {
-  document.querySelectorAll(".tab-button").forEach(button => {
-    button.classList.remove("active");
-  });
-  clickedTab.classList.add("active");
-  document.getElementById("content1").style.display = "none";
-  document.getElementById("content2").style.display = "none";
-  document.getElementById(contentToShow).style.display = "block";
-}
-document.getElementById("test1").addEventListener("click", function () {
-  setActiveTab(this, "content1");
-});
-document.getElementById("test2").addEventListener("click", function () {
-  setActiveTab(this, "content2");
-});
-</script> -->
   
 <script>
     document.addEventListener("DOMContentLoaded", function () {
@@ -448,21 +442,17 @@ document.getElementById("test2").addEventListener("click", function () {
     });
     
     function setActiveTab(clickedTab, contentToShow) {
-      // Remove 'active' class and reset color for all tabs
       document.querySelectorAll(".tab-button").forEach(button => {
         button.classList.remove("active");
       });
       
-      // Add 'active' class and set color for the clicked tab
       clickedTab.classList.add("active");
     
-      // Hide all content and show only the selected tab's content
       document.getElementById("content1").style.display = "none";
       document.getElementById("content2").style.display = "none";
       document.getElementById(contentToShow).style.display = "block";
     }
     
-    // Event listeners for tabs
     document.getElementById("test1").addEventListener("click", function () {
       setActiveTab(this, "content1");
     });
@@ -482,7 +472,7 @@ document.getElementById("test2").addEventListener("click", function () {
             width: 1400,
             height: 500,
             layout: {
-                backgroundColor: '#1E1E1E',  
+                backgroundColor: '#494949',  
                 textColor: '#FFFFFF',       
             },
             grid: {
@@ -526,23 +516,7 @@ document.getElementById("test2").addEventListener("click", function () {
             },
         });
         volumeSeries.setData(vol_data);
-        // candlestickSeries.setData([
-        //     { time: '2024-01-01', open: 100, high: 110, low: 95, close: 105 },
-        //     { time: '2024-01-02', open: 105, high: 115, low: 100, close: 110 },
-        //     { time: '2024-01-03', open: 110, high: 118, low: 108, close: 112 },
-        //     { time: '2024-01-04', open: 112, high: 120, low: 110, close: 118 },
-        //     { time: '2024-01-05', open: 118, high: 125, low: 115, close: 122 },
-        //     { time: '2024-01-06', open: 122, high: 130, low: 120, close: 125 },
-        // ]);
-
-        // candlestickSeries.setMarkers([
-        //     { time: '2024-01-03', position: 'aboveBar', color: '#FF4444', shape: 'arrowDown', text: 'S' },
-        //     { time: '2024-01-06', position: 'aboveBar', color: '#FF4444', shape: 'arrowDown', text: 'CL' },
-        //     { time: '2024-01-02', position: 'belowBar', color: '#4285F4', shape: 'arrowUp', text: 'L' },
-        //     { time: '2024-01-04', position: 'belowBar', color: '#4285F4', shape: 'arrowUp', text: 'L' },
-        //     { time: '2024-01-05', position: 'belowBar', color: '#34A853', shape: 'circle', text: 'L' },
-        //     { time: '2024-01-03', position: 'aboveBar', color: '#FF4444', shape: 'circle', text: 'CL' },
-        // ]);
+ 
         chart.timeScale().fitContent();
     </script>
 <script>

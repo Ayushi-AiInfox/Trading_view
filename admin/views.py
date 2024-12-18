@@ -113,7 +113,7 @@ def AdminDashboardView(request):
             interval_data = '1w'
 
         current_datetime = datetime.now()
-        val = 3000
+        val = 4000
         if  interval_data == '5d' :
             val=5000
         date_before_59_days = current_datetime - timedelta(days=val)
@@ -137,12 +137,10 @@ def AdminDashboardView(request):
         chart_data = data.to_dict(orient="records") 
         
         chart_data = [{"open":i.get("Open"),"high":i.get("High"),"low":i.get("Low"),"close":i.get("Close"),"volume":i.get("Volume"),"time":i.get("time")} for i in chart_data]
-        colors = ["#F44336", "#05E4A3"]
+        colors = ["#F44336", "#4CAF50"]
         volume_data = [{"value":i.get("volume"),"time":i.get("time"),"color":random.choice(colors)} for i in chart_data]
         d= dict(stats)      
         trades_data = d.get('_trades')
-        # trades_data['EntryDate'] = trades_data['EntryTime'].apply(lambda x: date_before_59_days.date() + timedelta(days=x))
-        # trades_data['ExitDate'] = trades_data['ExitTime'].apply(lambda x: date_before_59_days.date() + timedelta(days=x))
         trades_data = trades_data.to_dict(orient="records")
         data_dict = {}  
         data_dict['Return'] = d['Return [%]']
@@ -157,12 +155,19 @@ def AdminDashboardView(request):
         data_dict['profit_factor'] = d["Profit Factor"]
         symbols = symbol_list()
         t_data = []
-        #{ time: '2024-01-03', position: 'aboveBar', color: '#FF4444', shape: 'arrowDown', text: 'S' }
+        pivotal_data=[]
+        print(trades_data)
         for i in trades_data:
-            f={"time":i.get("EntryTime").strftime(date_format),"position":"belowBar","color":"#4285F4","shape":"arrowUp","text":"L"}
-            s = {"time":(i.get("ExitTime") + timedelta(days=1)).strftime(date_format),"position":"aboveBar","color":"#FF4444","shape":"arrowDown","text":"S"}
+            f={"time":(i.get("EntryTime") + timedelta(days=1)).strftime(date_format),"position":"belowBar","color":"#4285F4","shape":"arrowUp","text":"L"}
+            s = {"time":i.get("ExitTime").strftime(date_format),"position":"aboveBar","color":"#FF4444","shape":"arrowDown","text":"S"}
+            p = {"time":i.get("EntryTime").strftime(date_format),"price":i.get("EntryPrice")}
             t_data.append(f)
-            t_data.append(s)
+            t_data.append(s) 
+            pivotal_data.append(p)    
+        pivotal_data=pivotal_data[-5:]
+    
+
+        
         # for i in symbols:
         #     try:
         #         Stock.objects.create(ticker=i,name=i)
@@ -173,8 +178,14 @@ def AdminDashboardView(request):
         {
         'message':message,'message1':message1,
         "user":usr,"trades_data":trades_data,
-        "data_dict":data_dict,"symbols":symbols,'portfolio':portfolio_data,
-        "interval_data":interval_data,"chart_data":chart_data,"trades_data":t_data,"volume_data":volume_data
+        "data_dict":data_dict,
+        "symbols":symbols,
+        'portfolio':portfolio_data,
+        "interval_data":interval_data,
+        "chart_data":chart_data,
+        "trades_data":t_data,
+        "volume_data":volume_data,
+        "pivotal_data":pivotal_data
         })
 
 
