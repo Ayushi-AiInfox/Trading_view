@@ -83,6 +83,10 @@ def LoginView( request):
 
 
 
+
+
+
+
 def SignupView(request):
     if request.session.has_key('token'):
         token = request.session.get('token')
@@ -123,11 +127,8 @@ def SignupView(request):
         try:
             user = User.objects.create(username=username, email=email, password=make_password(password1))
             user.save()
-
-                # Store session data
             request.session['username'] = user.username
             request.session['role'] = 'user'
-
             messages.success(request, "Signup successful!")
             return redirect('login')
         except Exception as e:

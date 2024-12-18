@@ -7,7 +7,9 @@ urlpatterns = [
   
     path('dashboard/', views.AdminDashboardView, name='admin_dashboard'),
     path('save-symbol/', views.SaveSymbol,name= 'saving_symbol'),
-    path('save-interval/',views.saveInterval,name='save interval')
+    path('save-interval/',views.saveInterval,name='save interval'),
+    path('portfolio/',views.portfolio,name='portfolio'),
+    path('profile/',views.profile,name='profile')
 
 ]
 

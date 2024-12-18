@@ -47,9 +47,61 @@ class OverView(models.Model):
     avg_lossing_trades = models.CharField(max_length=200)
     total_open_trades = models.CharField(max_length=200)
     status = models.CharField(max_length=200)
-
     class Meta:
         db_table = 'overview'
+
+
+
+class Portfolio(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='portfolios')
+    name = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    def __str__(self):
+        return f"{self.name} - {self.user.username}"
+
+
+class Stock(models.Model):
+    ticker = models.CharField(max_length=10, unique=True)
+    name = models.CharField(max_length=255)
+    class Meta:
+        db_table = 'stock'
+    def __str__(self):
+        return f"{self.ticker} - {self.name}"
+
+
+
+
+class Transaction(models.Model):
+    TRANSACTION_TYPES = [
+        ('BUY', 'Buy'),
+        ('SELL', 'Sell'),
+    ]
+    portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, related_name='transactions')
+    stock = models.ForeignKey(Stock, on_delete=models.CASCADE)
+    transaction_type = models.CharField(max_length=4, choices=TRANSACTION_TYPES)
+    quantity = models.PositiveIntegerField()
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    date = models.DateTimeField()
+    note = models.TextField(blank=True, null=True)  # Optional notes about the transaction
+    def __str__(self):
+        return f"{self.get_transaction_type_display()} {self.stock.ticker} ({self.quantity})"
+    @property
+    def total_value(self):
+        return self.quantity * self.price
+
+
+
+class Holding(models.Model):
+    portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, related_name='holdings')
+    stock = models.ForeignKey(Stock, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField()  # Current quantity of stocks
+    average_price = models.DecimalField(max_digits=10, decimal_places=2)  # Average buy price
+    
+    def __str__(self):
+        return f"{self.stock.ticker} - {self.quantity} shares"
+
+
 
 
         

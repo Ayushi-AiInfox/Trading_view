@@ -45,6 +45,11 @@ body {
     height: 100%;
     object-fit: cover;
 }
+
+.title a{
+    text-decoration: none;
+    color: #00E4A3;
+}
 .dropdown {
     display: none;
     position: absolute;
@@ -267,7 +272,7 @@ body {
 .timer-dropdown {
     position: absolute;
     top: 35px;
-    height: 265px;
+    height: auto;
     overflow: scroll;
     left: 0;
     background-color: white;
@@ -402,9 +407,13 @@ i.fa-solid.fa-magnifying-glass {
   th, td {
     text-align: left;
     padding: 12px 15px;
+
     border-bottom: 1px solid #ddd;
   }
   
+  td{
+    font-size: 14px;
+  }
   th {
     background-color: #000000;
     font-weight: 400;

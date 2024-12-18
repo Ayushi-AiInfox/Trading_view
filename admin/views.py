@@ -15,6 +15,42 @@ from datetime import datetime
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from datetime import datetime, timedelta
+import random
+
+
+
+def get_live_price(ticker):
+    try:
+        stock = yf.Ticker(ticker)
+        live_price = stock.fast_info['last_price']
+        return live_price
+    except Exception as e:
+        return f"Error fetching price for {ticker}: {str(e)}"
+
+def get_stock_sectors(tickers):
+    stock_sectors =[]
+    for ticker in tickers:
+        try:
+            stock = yf.Ticker(ticker)
+            info = stock.info
+            sector = info.get('sector', 'Unknown')  
+            stock_sectors.append(sector)
+        except Exception as e:
+            stock_sectors[ticker] = f"Error: {str(e)}" 
+    return stock_sectors
+
+
+def get_stock_regions(tickers):
+    stock_regions = []
+    for ticker in tickers:
+        try:
+            stock = yf.Ticker(ticker)
+            info = stock.info
+            region = info.get('country', 'Unknown')  
+            stock_regions.append(region)
+        except Exception as e:
+            stock_regions[ticker] = f"Error: {str(e)}"  
+    return stock_regions
 
 
 class SmaCross(Strategy):
@@ -69,49 +105,44 @@ def AdminDashboardView(request):
         ticker = portfolio_data.symbol
         interval_data  = portfolio_data.interval
 
-        if interval_data == '1':
-            interval_data='1m'
-        elif interval_data == '2':
-            interval_data = '2m'
-        elif interval_data == '3':
-            interval_data = '3m'
-        elif interval_data == '5':
-            interval_data = '5m'
-        elif interval_data == '10':
-            interval_data ='10m'
-        elif interval_data == '15':
-            interval_data = '15m'
-        elif interval_data == '30':
-            interval_data = '30m'
-        elif interval_data =='60':
-            interval_data  = '1h'
-        elif interval_data == '120':
-            interval_data = '2h'
-        elif interval_data == '240':
-            interval_data = '4h'
-        elif interval_data == '1140':
-            interval_data = '1d'
+        if interval_data == '1140':
+            interval_data='1d'
+        elif interval_data == '7200':
+            interval_data = '5d'
+        elif interval_data == '10080':
+            interval_data = '1w'
+
         current_datetime = datetime.now()
-        val = 58
-        if interval_data == '1d' or interval_data == '1h' or interval_data == '2h' or interval_data=='4h':
-            val=500
+        val = 3000
+        if  interval_data == '5d' :
+            val=5000
         date_before_59_days = current_datetime - timedelta(days=val)
         date_format = "%Y-%m-%d"
-        
         previous_date = current_datetime - timedelta(days=1)
         previous_date  = previous_date.strftime(date_format)
         date_before_59_days_formatted = date_before_59_days.strftime(date_format)
-        print(interval_data)
-
-        data = yf.download(ticker, start=date_before_59_days, end=previous_date, interval=interval_data)
-        print(data)
+        data = yf.download(ticker, start=date_before_59_days, end=previous_date, interval="5d")
+        data = data.reset_index()
+        if 'Date' in data.columns:
+            data['time'] = data['Date'].dt.strftime('%Y-%m-%d %H:%M:%S')
+            #data = data.drop(columns ='Date')
+        data['Date'] = pd.to_datetime(data['Date'])  
+        data.set_index('Date', inplace=True) 
+        
         data = data.drop(columns=('Adj Close',ticker))
         data.columns = [col[0] for col in data.columns]
         bt = Backtest(data, SmaCross, commission=.000,
               exclusive_orders=True,cash=10000000)
-        stats = bt.run()    
+        stats = bt.run() 
+        chart_data = data.to_dict(orient="records") 
+        
+        chart_data = [{"open":i.get("Open"),"high":i.get("High"),"low":i.get("Low"),"close":i.get("Close"),"volume":i.get("Volume"),"time":i.get("time")} for i in chart_data]
+        colors = ["#F44336", "#05E4A3"]
+        volume_data = [{"value":i.get("volume"),"time":i.get("time"),"color":random.choice(colors)} for i in chart_data]
         d= dict(stats)      
         trades_data = d.get('_trades')
+        # trades_data['EntryDate'] = trades_data['EntryTime'].apply(lambda x: date_before_59_days.date() + timedelta(days=x))
+        # trades_data['ExitDate'] = trades_data['ExitTime'].apply(lambda x: date_before_59_days.date() + timedelta(days=x))
         trades_data = trades_data.to_dict(orient="records")
         data_dict = {}  
         data_dict['Return'] = d['Return [%]']
@@ -125,17 +156,28 @@ def AdminDashboardView(request):
         data_dict['worst_trades'] = d["Worst Trade [%]"]
         data_dict['profit_factor'] = d["Profit Factor"]
         symbols = symbol_list()
-
-
-        
-            
+        t_data = []
+        #{ time: '2024-01-03', position: 'aboveBar', color: '#FF4444', shape: 'arrowDown', text: 'S' }
+        for i in trades_data:
+            f={"time":i.get("EntryTime").strftime(date_format),"position":"belowBar","color":"#4285F4","shape":"arrowUp","text":"L"}
+            s = {"time":(i.get("ExitTime") + timedelta(days=1)).strftime(date_format),"position":"aboveBar","color":"#FF4444","shape":"arrowDown","text":"S"}
+            t_data.append(f)
+            t_data.append(s)
+        # for i in symbols:
+        #     try:
+        #         Stock.objects.create(ticker=i,name=i)
+        #     except:
+        #         pass 
         return render(
-            request,'admin_dashboard.html',
-        {'message':message,'message1':message1,
+        request,'admin_dashboard.html',
+        {
+        'message':message,'message1':message1,
         "user":usr,"trades_data":trades_data,
         "data_dict":data_dict,"symbols":symbols,'portfolio':portfolio_data,
-        "interval_data":interval_data
+        "interval_data":interval_data,"chart_data":chart_data,"trades_data":t_data,"volume_data":volume_data
         })
+
+
     else:
         return redirect('../../accounts/login')
 
@@ -157,28 +199,29 @@ def saveInterval(request):
     if request.method == 'POST':
         data = json.loads(request.body)
         interval_data = data.get('interval')
-        if interval_data == '1m':
-            interval_data = '1'
-        elif interval_data == '2m':
-            interval_data = '2'
-        elif interval_data == '3m':
-            interval_data = '3'
-        elif interval_data == '5m':
-            interval_data = '5'
-        elif interval_data == '10m':
-            interval_data ='10'
-        elif interval_data == '15m':
-            interval_data = '15'
-        elif interval_data == '30m':
-            interval_data = '30'
-        elif interval_data == '1h':
-            interval_data = '60'
-        elif interval_data == '2h':
-            interval_data = '120'
-        elif interval_data == '4h':
-            interval_data = '240'
-        elif interval_data == '1d':
+        print(interval_data)
+        if interval_data == '1d':
             interval_data = '1140'
+        elif interval_data == '5d':
+            interval_data = '7200'
+        # elif interval_data == '1w':
+        #     interval_data = '10080'
+        # elif interval_data == '5m':
+        #     interval_data = '5'
+        # elif interval_data == '10m':
+        #     interval_data ='10'
+        # elif interval_data == '15m':
+        #     interval_data = '15'
+        # elif interval_data == '30m':
+        #     interval_data = '30'
+        # elif interval_data == '1h':
+        #     interval_data = '60'
+        # elif interval_data == '2h':
+        #     interval_data = '120'
+        # elif interval_data == '4h':
+        #     interval_data = '240'
+        # elif interval_data == '1d':
+        #     interval_data = '1140'
 
         if interval_data:
             interval = PortfolioSettings.objects.all()[0]
@@ -187,6 +230,100 @@ def saveInterval(request):
             return redirect('../../admin/dashboard')
         return JsonResponse({'success': False, 'message': 'Invalid interval name'})
     return JsonResponse({'success': False, 'message': 'Invalid request method'})
+
+
+
+
+
+def portfolio(request):
+    if request.session.has_key('token'):
+        message = request.session.get('message')
+        message1 = request.session.get('message1')
+        try:
+            del request.session['message']
+        except:
+            pass
+        try:
+            del request.session['message1']
+        except:
+            pass
+        token = request.session.get('token')
+        try:
+            d = jwt.decode(token, key=KEYS, algorithms=['HS256'])
+            usr = User.objects.get(email = d.get("email"))
+            if d.get('method')!="verified" or usr.role!='admin':
+                return redirect('../../accounts/login')
+        except:
+            return redirect('../../accounts/login')
+        portfolios = User.objects.filter(email = d.get("email"))
+
+        data = Holding.objects.all()
+        gross_active_investment= 0
+        stocks = 0 
+        portfolio_value = 0
+        for i in data:
+            val=get_live_price(i.stock.ticker)
+            gross_active_investment += float(i.quantity)*float(val)
+            stocks += float(i.quantity)
+            portfolio_value += float(i.quantity)*float(val)
+        trans = Transaction.objects.all()
+        buyed = 0
+        selled = 0
+        for i in trans:
+            if i.transaction_type.lower() == "buy":
+                buyed+=float(i.quantity)*float(i.price)
+            elif i.transaction_type.lower() == "sell":
+                selled += float(i.quantity) * float(i.price)
+        overall = selled-buyed
+        portfolio_value+=overall
+        profit_percentage  = (overall/buyed)*100
+        share_wise_investment = {"data":[i.quantity for i in data],"labels":[i.stock.ticker for i in data]}
+        
+        sector_wise = get_stock_sectors(share_wise_investment.get('labels'))
+        sector_wise = {"data":share_wise_investment.get('data'),"labels":sector_wise}
+        region_wise = get_stock_regions(share_wise_investment.get('labels'))
+        region_wise = {"data":share_wise_investment.get('data'),"labels":region_wise}
+
+        return render(request, 'portfolio.html', 
+        {'gross_active_investment': gross_active_investment,
+        "stocks":stocks,"portfolio_value":portfolio_value,
+        "profit_percentage":profit_percentage,"expenses":buyed,
+        "share_wise_investment":share_wise_investment,"sector_wise_investment":sector_wise,"region_wise":region_wise
+        })
+
+    else:
+        return redirect('../../accounts/login')
+
+
+
+
+
+def profile(request):
+    if request.session.has_key('token'):
+        message = request.session.get('message')
+        message1 = request.session.get('message1')
+        try:
+            del request.session['message']
+        except:
+            pass
+        try:
+            del request.session['message1']
+        except:
+            pass
+        token = request.session.get('token')
+        try:
+            d = jwt.decode(token, key=KEYS, algorithms=['HS256'])
+            usr = User.objects.get(email = d.get("email"))
+            if d.get('method')!="verified" or usr.role!='admin':
+                return redirect('../../accounts/login')
+        except:
+            return redirect('../../accounts/login')
+        return render(request,'profile.html')
+    else:
+        return redirect('../../accounts/login')
+        
+        
+
 
     
   
