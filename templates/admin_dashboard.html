@@ -36,19 +36,22 @@
                             <option value="5d">5 day</option>
                            
                         </div>
+                        <div class="profile1 " id="profile1">
+                            <div class="profile-icon-1 icon-left">
+                               Screens
+                               <i class="fa fa-caret-down"></i>
+                            </div>
+                            <div class="dropdown1 drop-left" id="dropdown1" >
+                                <a href="../../../admin/dashboard">Screen-1</a>
+                                <a href="../../../admin/screen-2">Screen-2</a>
+                                <a href="../../../admin/screen-3">Screen-3</a>
+                            </div>
+                        </div>
+                        
                     </div>  
         
-                    <!-- Search 2 Section (Right) -->
-                    <!-- <div class="serach-2">
-                        <div class="serch-main" onclick="openPopup()">
-                            <p><i class="fa-solid fa-chart-bar"></i></p>
-                            <span>Indicator</span>
-                        </div>
-                        <div class="serch-dropdown" id="search2-dropdown">
-                            <input type="text" placeholder="Search...">
-                            <button onclick="searchFunction()">Search</button>
-                        </div>
-                    </div> -->
+                     
+                    </div> 
                 </div>
                     
                     <div id="trading-chart-wrapper">
@@ -173,6 +176,8 @@
   
 </div>
 
+
+   
 <!-- position chart -->
 <script>
     // Initialize chart
@@ -222,6 +227,20 @@
     });
 </script>
 
+<script>
+    const profile1 = document.getElementById('profile1');
+    const dropdown1 = document.getElementById('dropdown1');
+
+    profile1.addEventListener('click', () => {
+        dropdown1.style.display = dropdown1.style.display === 'block' ? 'none' : 'block';
+    });
+
+    window.addEventListener('click', (event) => {
+        if (!profile1.contains(event.target)) {
+            dropdown1.style.display = 'none';
+        }
+    });
+</script>
 
 <script>
 
@@ -463,14 +482,22 @@ function filterSymbols() {
     
 
     <script>
+        const container = document.getElementById('tradingview-widget-container');
+    
+        // Function to resize chart
+        const resizeChart = () => {
+            const width = container.clientWidth;
+            const height = container.clientHeight; // Dynamically adjust height
+            chart.resize(width, height);
+        };
+    
         const char_data = {{ chart_data|safe }};
-        const trade_data ={{ trades_data|safe }};
-        const vol_data = {{volume_data|safe }};
-        
- 
-        const chart = LightweightCharts.createChart(document.getElementById('tradingview-widget-container'), {
-            width: 1400,
-            height: 500,
+        const trade_data = {{ trades_data|safe }};
+        const vol_data = {{ volume_data|safe }};
+            
+        const chart = LightweightCharts.createChart(container, {
+            width: container.clientWidth,
+            height: container.clientHeight, // Initial height based on container
             layout: {
                 backgroundColor: '#494949',  
                 textColor: '#FFFFFF',       
@@ -489,6 +516,7 @@ function filterSymbols() {
                 borderColor: '#555',
             },
         });
+    
         const candlestickSeries = chart.addCandlestickSeries({
             upColor: '#4CAF50',       
             downColor: '#F44336',     
@@ -497,28 +525,32 @@ function filterSymbols() {
             wickUpColor: '#4CAF50',
             wickDownColor: '#F44336',
         });
-
-        candlestickSeries.setData(
-            char_data  
-        );
+    
+        candlestickSeries.setData(char_data);
         candlestickSeries.setMarkers(trade_data);
-
-
+    
         const volumeSeries = chart.addHistogramSeries({
-            color: '#26a69a',  // Default color for volume bars
+            color: '#26a69a',
             priceFormat: {
                 type: 'volume',
             },
-            priceScaleId: '', // Creates a separate scale for the volume
+            priceScaleId: '', 
             scaleMargins: {
-                top: 0.7,    // Move volume series to the bottom 30% of the chart
+                top: 0.7,
                 bottom: 0,
             },
         });
+    
         volumeSeries.setData(vol_data);
- 
         chart.timeScale().fitContent();
+    
+        // Call resizeChart on window resize
+        window.addEventListener('resize', resizeChart);
+    
+        // Adjust chart size on page load
+        resizeChart();
     </script>
+    
 <script>
 function openPopup() {
     document.getElementById('popup').style.display = 'block';

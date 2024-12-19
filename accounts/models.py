@@ -103,5 +103,14 @@ class Holding(models.Model):
 
 
 
+class MultiScreen(models.Model):
+    symbol = models.CharField(max_length= 200)
+    interval = models.CharField(max_length = 200)
+
+    class Meta:
+        db_table="multi_screen"
+
+
+
 
         

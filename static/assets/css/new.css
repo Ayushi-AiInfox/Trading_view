@@ -2,7 +2,7 @@
 body {
     margin: 0;
     font-family: "Rubik", sans-serif;
-    background: #111212;
+    background: #111212 !important;
 }
 
 
@@ -35,24 +35,46 @@ body {
 .profile-icon {
     width: 30px;
     height: 30px;
+    cursor: pointer;
     background-color: white;
     border-radius: 50%;
     overflow: hidden;
 }
 
+
+
+.profile2{
+    margin-left: 40px;
+}
+
+.profile-icon-1{
+    cursor: pointer;
+}
+.profile-icon-2{
+    cursor: pointer;
+}
 .profile-icon img{
     width: 100%;
     height: 100%;
     object-fit: cover;
 }
+.top-bar-main p{
+    padding-left: 20px;
+}
 
+.icon-left{
+    margin-left: 20px;
+}
+.drop-left{
+    left: 85px !important;
+}
 .title a{
     text-decoration: none;
     color: #00E4A3;
 }
 .dropdown {
     display: none;
-    position: absolute;
+    position: absolute !important;
     z-index: 9999999;
     top: 41px;
     right: 0;
@@ -63,6 +85,48 @@ body {
     padding: 10px;
     border-radius: 3px;
 }
+.dropdown1 {
+    display: none;
+    position: absolute;
+    z-index: 9999999;
+    top: 29px;
+    left: 0px;
+    right: 0;
+    width: 130px;
+    background-color: #1F1F1F;
+    color: black;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    border-radius: 3px;
+}
+.dropdown2 {
+    display: none;
+    position: absolute;
+    z-index: 9999999;
+    top: 40px;
+    right: 0;
+    width: 130px;
+    background-color: #1F1F1F;
+    color: black;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    border-radius: 3px;
+}
+
+.top-bar0 {
+    display: flex;
+    gap: 20px;
+    background: #3f3f3f;
+    padding-top: 5px;
+    position: relative;
+    padding-right: 10px;
+    padding-left: 10px;
+    align-items: center;
+    padding-bottom: 5px;
+    color: #fff;
+    justify-content: space-between;
+}
+
 .dropdown a {
     text-decoration: none;
     color: rgb(255, 255, 255);
@@ -72,13 +136,36 @@ body {
     transition: 0.3s ease-in-out;
 }       
 
+.dropdown1 a {
+    text-decoration: none;
+    color: rgb(255, 255, 255);
+    display: block;
+    padding: 5px 0;
+    font-family: "Rubik", sans-serif;
+    transition: 0.3s ease-in-out;
+} 
+
+.dropdown2 a {
+    text-decoration: none;
+    color: rgb(255, 255, 255);
+    display: block;
+    padding: 5px 0;
+    font-family: "Rubik", sans-serif;
+    transition: 0.3s ease-in-out;
+} 
 .dropdown a:hover{
     color: #00E4A3;
 }
+.dropdown1 a:hover{
+    color: #00E4A3;
+}
 
+.dropdown2 a:hover{
+    color: #00E4A3;
+}
 .content {
     display: flex;
-    height: calc(100vh - 70px);
+    height: fit-content;
     padding: 10px;
 }
 .main {
@@ -90,7 +177,7 @@ body {
 }
 
 .chart {
-    flex: 2;
+
     background-color: #000000;
     box-shadow: rgba(14, 63, 126, 0.06) 0px 0px 0px 1px, rgba(42, 51, 70, 0.03) 0px 1px 1px -0.5px, rgba(42, 51, 70, 0.04) 0px 2px 2px -1px, rgba(42, 51, 70, 0.04) 0px 3px 3px -1.5px, rgba(42, 51, 70, 0.03) 0px 5px 5px -2.5px, rgba(42, 51, 70, 0.03) 0px 10px 10px -5px, rgba(42, 51, 70, 0.03) 0px 24px 24px -8px;
     margin-bottom: 5px;
@@ -99,6 +186,18 @@ body {
     overflow: auto;
 }
 
+.top-bar-main {
+    display: flex;
+    gap: 20px;
+    background: #3f3f3f;
+    padding-top: 10px;
+    position: relative;
+    padding-right: 10px;
+    padding-left: 10px;
+    align-items: center;
+    padding-bottom: 10px;
+    color: #fff;
+}
 .stock-info {
     flex: 1;
     background-color: #000000;
@@ -137,8 +236,9 @@ body {
 .top-bar {
     display: flex;
     gap: 20px;
-    background: #1f1f1f;
+    background:#3f3f3f;
     padding-top: 5px;
+    position: relative;
     padding-right: 10px;
     padding-left: 10px;
     align-items: center;
@@ -499,7 +599,7 @@ i.fa-solid.fa-magnifying-glass {
    /* Chart container */
    #trading-chart-wrapper {
     position: relative;
-    height: 500px;
+    height: 950px;
     width: 100%;
     background-color: #1E1E1E; /* Dark theme background */
   }
@@ -541,3 +641,35 @@ i.fa-solid.fa-magnifying-glass {
   .trade-table td {
     background-color: #2ECC71; /* Green cell for 'Long' */
   }
+  .dropdown-screen{
+    display: inline-block;
+    position: relative;
+    border-radius: 3px !important;
+}
+.dropdown-screen select {
+    color: #fff;
+    padding: 2px;
+    font-size: 16px;
+    margin-left: 40px !important;
+    border-radius: 0px;
+    border: none;
+    background: #1f1f1f;
+}
+.dropdown-screen:focus-visible{
+    border: none;
+    outline: none;
+}
+#tradingview-widget-container {
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    display: flex; /* Optional: Ensures the chart fills the container */
+}
+html, body {
+    margin: 0; /* Remove default margins */
+    padding: 0; /* Remove default paddings */
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+}
+.tv-lightweight-charts {
+    height: 100% !important;
+}

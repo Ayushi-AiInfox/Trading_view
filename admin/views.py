@@ -65,6 +65,37 @@ class SmaCross(Strategy):
         elif crossover(self.ma2, self.ma1):
             self.sell()
 
+
+
+class PivotalStrategy(Strategy):
+    def init(self):
+        self.pivot_points = []
+        self.support_levels = []
+        self.resistance_levels = []
+    
+    def calculate_pivots(self, high, low, close):
+        pp = (high + low + close) / 3
+        s1 = 2 * pp - high
+        r1 = 2 * pp - low
+        s2 = pp - (high - low)
+        r2 = pp + (high - low)
+        return pp, s1, r1, s2, r2
+
+    def next(self):
+        if len(self.data.Close) < 2:
+            return
+        prev_high = self.data.High[-2]
+        prev_low = self.data.Low[-2]
+        prev_close = self.data.Close[-2]
+        pp, s1, r1, s2, r2 = self.calculate_pivots(prev_high, prev_low, prev_close)
+        self.pivot_points.append(pp)
+        self.support_levels.append(s1)
+        self.resistance_levels.append(r1)
+        if self.data.Close[-1] > r1 and not self.position:
+            self.buy()
+        if self.data.Close[-1] < s1 and self.position:
+            self.sell()
+
 def symbol_list():
     url = "https://raw.githubusercontent.com/datasets/s-and-p-500-companies/master/data/constituents.csv"
     sp500_data = pd.read_csv(url)
@@ -121,21 +152,18 @@ def AdminDashboardView(request):
         previous_date = current_datetime - timedelta(days=1)
         previous_date  = previous_date.strftime(date_format)
         date_before_59_days_formatted = date_before_59_days.strftime(date_format)
-        data = yf.download(ticker, start=date_before_59_days, end=previous_date, interval="5d")
+        data = yf.download(ticker, start=date_before_59_days, end=previous_date, interval=interval_data)
         data = data.reset_index()
         if 'Date' in data.columns:
             data['time'] = data['Date'].dt.strftime('%Y-%m-%d %H:%M:%S')
-            #data = data.drop(columns ='Date')
         data['Date'] = pd.to_datetime(data['Date'])  
         data.set_index('Date', inplace=True) 
-        
         data = data.drop(columns=('Adj Close',ticker))
         data.columns = [col[0] for col in data.columns]
-        bt = Backtest(data, SmaCross, commission=.000,
+        bt = Backtest(data, PivotalStrategy, commission=.000,
               exclusive_orders=True,cash=10000000)
         stats = bt.run() 
         chart_data = data.to_dict(orient="records") 
-        
         chart_data = [{"open":i.get("Open"),"high":i.get("High"),"low":i.get("Low"),"close":i.get("Close"),"volume":i.get("Volume"),"time":i.get("time")} for i in chart_data]
         colors = ["#F44336", "#4CAF50"]
         volume_data = [{"value":i.get("volume"),"time":i.get("time"),"color":random.choice(colors)} for i in chart_data]
@@ -156,7 +184,6 @@ def AdminDashboardView(request):
         symbols = symbol_list()
         t_data = []
         pivotal_data=[]
-        print(trades_data)
         for i in trades_data:
             f={"time":(i.get("EntryTime") + timedelta(days=1)).strftime(date_format),"position":"belowBar","color":"#4285F4","shape":"arrowUp","text":"L"}
             s = {"time":i.get("ExitTime").strftime(date_format),"position":"aboveBar","color":"#FF4444","shape":"arrowDown","text":"S"}
@@ -196,7 +223,7 @@ def SaveSymbol(request):
     if request.method == 'POST':
         data = json.loads(request.body)
         symbol_name = data.get('symbol')
-        print(symbol_name)
+        
         if symbol_name:
             symbol = PortfolioSettings.objects.all()[0]
             symbol.symbol = symbol_name
@@ -204,6 +231,145 @@ def SaveSymbol(request):
             return JsonResponse({"success":True,"message":"Symbol Saved successfully"})
         return JsonResponse({'success': False, 'message': 'Invalid symbol name'})
     return JsonResponse({'success': False, 'message': 'Invalid request method'})
+
+
+def save_multi_screen(request):
+    if request.method=='POST':
+        data = json.loads(request.body)
+        symbol_name = data.get('symbol')
+        if symbol_name:
+            symbol = MultiScreen.objects.all()[0]
+            symbol.symbol= symbol_name
+            symbol.save()
+            return JsonResponse({"success":True,"message":"Symbol Saved successfully"})
+        return JsonResponse({'success': False, 'message': 'Invalid symbol name'})
+    return JsonResponse({'success': False, 'message': 'Invalid request method'})    
+
+
+
+def screen2(request):
+    if request.session.has_key('token'):
+        message = request.session.get('message')
+        message1 = request.session.get('message1')
+        try:
+            del request.session['message']
+        except:
+            pass
+        try:
+            del request.session['message1']
+        except:
+            pass
+        token = request.session.get('token')
+        try:
+            d = jwt.decode(token, key=KEYS, algorithms=['HS256'])
+            usr = User.objects.get(email = d.get("email"))
+            if d.get('method')!="verified" or usr.role!='admin':
+                return redirect('../../accounts/login')
+        except:
+            return redirect('../../accounts/login')
+
+        portfolio_data = PortfolioSettings.objects.all()[0]
+        ticker = portfolio_data.symbol
+        interval_data  = portfolio_data.interval
+        if interval_data == '1140':
+            interval_data='1d'
+        elif interval_data == '7200':
+            interval_data = '5d'
+        elif interval_data == '10080':
+            interval_data = '1w'
+        current_datetime = datetime.now()
+        val = 4000
+        if  interval_data == '5d' :
+            val=5000
+        date_before_59_days = current_datetime - timedelta(days=val)
+        date_format = "%Y-%m-%d"
+        previous_date = current_datetime - timedelta(days=1)
+        previous_date  = previous_date.strftime(date_format)
+        date_before_59_days_formatted = date_before_59_days.strftime(date_format)
+        data = yf.download(ticker, start=date_before_59_days, end=previous_date, interval=interval_data)
+        data = data.reset_index()
+        if 'Date' in data.columns:
+            data['time'] = data['Date'].dt.strftime('%Y-%m-%d')
+        data['Date'] = pd.to_datetime(data['Date'])  
+        data.set_index('Date', inplace=True) 
+        data = data.drop(columns=('Adj Close',ticker))
+        data.columns = [col[0] for col in data.columns]
+        data = data.to_dict(orient="records")
+        data = [{"time":i.get("time"),"value":i.get("Close")} for i in data]
+        return render(request,'screen2.html',{"data":data})
+    else:
+        return redirect('../../accounts/login')
+
+
+
+
+
+def screen3(request):
+    if request.session.has_key('token'):
+        message = request.session.get('message')
+        message1 = request.session.get('message1')
+        try:
+            del request.session['message']
+        except:
+            pass
+        try:
+            del request.session['message1']
+        except:
+            pass
+        token = request.session.get('token')
+        try:
+            d = jwt.decode(token, key=KEYS, algorithms=['HS256'])
+            usr = User.objects.get(email = d.get("email"))
+            if d.get('method')!="verified" or usr.role!='admin':
+                return redirect('../../accounts/login')
+        except:
+            return redirect('../../accounts/login')
+        portfolio_data = MultiScreen.objects.all()[0]
+        ticker = portfolio_data.symbol
+        all_symbols=symbol_list()
+        all_symbols = all_symbols[:10]
+        current_datetime = datetime.now()
+        date_before_59_days = current_datetime - timedelta(days=4000)
+        previous_date = current_datetime - timedelta(days=1)
+        symbol_data = []
+
+        for symbol in all_symbols:
+            data = yf.download(symbol, start=date_before_59_days, end=previous_date, interval="1d")
+            data = data.reset_index()
+            if 'Date' in data.columns:
+                data['time'] = data['Date'].dt.strftime('%Y-%m-%d %H:%M:%S')
+            data['Date'] = pd.to_datetime(data['Date'])  
+            data.set_index('Date', inplace=True) 
+            # data = data.drop(columns=('Adj Close',symbol))
+            data.columns = [col[0] for col in data.columns]
+
+            bt = Backtest(data, PivotalStrategy, commission=.000,
+              exclusive_orders=True,cash=10000000)
+            stats = bt.run() 
+            d= dict(stats)  
+            if symbol==ticker:
+                chart_data = data.to_dict(orient="records")
+                chart_data = [{"open":i.get("Open"),"high":i.get("High"),"low":i.get("Low"),"close":i.get("Close"),"volume":i.get("Volume"),"time":i.get("time")} for i in chart_data]
+                
+
+
+            data_dict = {}  
+            data_dict['Return'] = d['Return [%]']
+            data_dict['total_trades'] = d["# Trades"]
+            data_dict['best_trades']= d['Best Trade [%]']
+            data_dict['buy_hold_return']=d["Buy & Hold Return [%]"]
+            data_dict['Max_dropdown'] = d['Max. Drawdown [%]']
+            data_dict['win_rate'] = d["Win Rate [%]"]
+            data_dict['max_dropdown_duration'] = d['Max. Drawdown Duration']
+            data_dict['average_dropdown_duration']=d["Avg. Drawdown Duration"]
+            data_dict['worst_trades'] = d["Worst Trade [%]"]
+            data_dict['profit_factor'] = d["Profit Factor"]
+            data_dict["symbol"]= symbol
+            symbol_data.append(data_dict)
+        return render(request,'screen3.html',{"data":symbol_data,"chart_data":chart_data,"symbol":ticker})
+    else:
+        return redirect('../../accounts/login')
+
 
 
 def saveInterval(request):
@@ -238,7 +404,7 @@ def saveInterval(request):
             interval = PortfolioSettings.objects.all()[0]
             interval.interval = interval_data
             interval.save()
-            return redirect('../../admin/dashboard')
+            return JsonResponse({"success":True,"message":"Symbol Saved successfully"})
         return JsonResponse({'success': False, 'message': 'Invalid interval name'})
     return JsonResponse({'success': False, 'message': 'Invalid request method'})
 

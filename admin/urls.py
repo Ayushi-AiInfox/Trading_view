@@ -9,7 +9,10 @@ urlpatterns = [
     path('save-symbol/', views.SaveSymbol,name= 'saving_symbol'),
     path('save-interval/',views.saveInterval,name='save interval'),
     path('portfolio/',views.portfolio,name='portfolio'),
-    path('profile/',views.profile,name='profile')
+    path('profile/',views.profile,name='profile'),
+    path("screen-2/",views.screen2,name='screen2'),
+    path("screen-3/",views.screen3,name="screen3"),
+    path("save-multi-symbol/",views.save_multi_screen,name="save_multi_symbols")
 
 ]
 
