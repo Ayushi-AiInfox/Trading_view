@@ -98,20 +98,18 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'TradingView.wsgi.application'
 
-# Database configuration
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'TradingView',
-        'HOST':'localhost',
-        'USER':'root',
-        'PASSWORD':'root',
+        'NAME': 'tradingview',
+        'HOST':'aiinfox.cf4ysyasm9bi.ap-south-1.rds.amazonaws.com',
+        'USER':'admin',
+        'PASSWORD':'narakanar',
         'PORT':'3306'
     }
 }
 
-
-# Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',

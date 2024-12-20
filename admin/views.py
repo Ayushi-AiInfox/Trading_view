@@ -27,6 +27,18 @@ def get_live_price(ticker):
     except Exception as e:
         return f"Error fetching price for {ticker}: {str(e)}"
 
+
+def get_technical_rating(price, sma_50, sma_200):
+    if price > sma_50 > sma_200:
+        return "Strong Buy"
+    elif price > sma_50:
+        return "Buy"
+    elif price < sma_50:
+        return "Sell"
+    else:
+        return "Hold"
+
+
 def get_stock_sectors(tickers):
     stock_sectors =[]
     for ticker in tickers:
@@ -331,42 +343,43 @@ def screen3(request):
         current_datetime = datetime.now()
         date_before_59_days = current_datetime - timedelta(days=4000)
         previous_date = current_datetime - timedelta(days=1)
-        symbol_data = []
+        data = yf.download(ticker, start=date_before_59_days, end=previous_date, interval="1d")
+        data = data.reset_index()
+        if 'Date' in data.columns:
+            data['time'] = data['Date'].dt.strftime('%Y-%m-%d %H:%M:%S')
+        data['Date'] = pd.to_datetime(data['Date'])  
+        data.set_index('Date', inplace=True) 
+        data.columns = [col[0] for col in data.columns]
 
+
+        chart_data = data.to_dict(orient="records") 
+        chart_data = [{"open":i.get("Open"),"high":i.get("High"),"low":i.get("Low"),"close":i.get("Close"),"volume":i.get("Volume"),"time":i.get("time")} for i in chart_data]
+
+        final_data = []
         for symbol in all_symbols:
-            data = yf.download(symbol, start=date_before_59_days, end=previous_date, interval="1d")
-            data = data.reset_index()
-            if 'Date' in data.columns:
-                data['time'] = data['Date'].dt.strftime('%Y-%m-%d %H:%M:%S')
-            data['Date'] = pd.to_datetime(data['Date'])  
-            data.set_index('Date', inplace=True) 
-            # data = data.drop(columns=('Adj Close',symbol))
-            data.columns = [col[0] for col in data.columns]
+            stock = yf.Ticker(symbol)
+            hist = stock.history(period="1y")
+            price = hist["Close"].iloc[-1]
+            sma_50 = hist["Close"].rolling(window=50).mean().iloc[-1]
+            sma_200 = hist["Close"].rolling(window=200).mean().iloc[-1]
+            info = stock.info
+            prev_close = info.get("regularMarketPreviousClose")
+            volume = info.get("volume")
+            market_cap = info.get("marketCap")
+            sector = info.get("sector")
+            if prev_close:
+                price_change = price - prev_close
+                percent_change = (price_change / prev_close) * 100
+            else:
+                price_change = "N/A"
+                percent_change = "N/A"
+            vol_price = volume * price if volume and price else "N/A"
+            technical_rating = get_technical_rating(price, sma_50, sma_200)
 
-            bt = Backtest(data, PivotalStrategy, commission=.000,
-              exclusive_orders=True,cash=10000000)
-            stats = bt.run() 
-            d= dict(stats)  
-            if symbol==ticker:
-                chart_data = data.to_dict(orient="records")
-                chart_data = [{"open":i.get("Open"),"high":i.get("High"),"low":i.get("Low"),"close":i.get("Close"),"volume":i.get("Volume"),"time":i.get("time")} for i in chart_data]
-                
-
-
-            data_dict = {}  
-            data_dict['Return'] = d['Return [%]']
-            data_dict['total_trades'] = d["# Trades"]
-            data_dict['best_trades']= d['Best Trade [%]']
-            data_dict['buy_hold_return']=d["Buy & Hold Return [%]"]
-            data_dict['Max_dropdown'] = d['Max. Drawdown [%]']
-            data_dict['win_rate'] = d["Win Rate [%]"]
-            data_dict['max_dropdown_duration'] = d['Max. Drawdown Duration']
-            data_dict['average_dropdown_duration']=d["Avg. Drawdown Duration"]
-            data_dict['worst_trades'] = d["Worst Trade [%]"]
-            data_dict['profit_factor'] = d["Profit Factor"]
-            data_dict["symbol"]= symbol
-            symbol_data.append(data_dict)
-        return render(request,'screen3.html',{"data":symbol_data,"chart_data":chart_data,"symbol":ticker})
+            data = {"symbol":symbol,"price":price,"price_change":price_change,"percent_change":percent_change,"volume":volume,"vol_price":vol_price,"market_cap":market_cap,"technical_rating":technical_rating,"sector":sector}
+            final_data.append(data)  
+        #print(final_data)  
+        return render(request,'screen3.html',{"final_data":final_data,"chart_data":chart_data})
     else:
         return redirect('../../accounts/login')
 

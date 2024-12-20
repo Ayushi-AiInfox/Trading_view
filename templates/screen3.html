@@ -45,7 +45,7 @@
                    Change Symbol
                 </div>
                 <div class="dropdown2" id="dropdown2">
-                    {% for i in data %}
+                    {% for i in final_data %}
                     <a href="#" class="dropdown-item" data-symbol="{{ i.symbol }}">{{ i.symbol }}</a>
                     {% endfor %}
                   
@@ -60,27 +60,28 @@
                       <thead>
                         <tr>
                           <td>Symbol</td>
-                          <td>Return</td>
-                          <td>Total trades</td>
-                          <td>Best Trades</td>
-                          <td>Buy hold return</td>
-                          <td>Max Dropdown</td>
-                          <td>Win Rate</td>
-                          <td>Max Dropdown Duration</td>
+                          <td>price</td>
+                          <td>price change</td>
+                          <td>price change</td>
+                          <td>volume</td>
+                          <td>vol*price</td>
+                          <td>market cap</td>
+                          <td>technical rating</td>
+                          <td>sector</td>
                         </tr>
                       </thead>
                       <tbody>
-                        {% for i in data %}
+                        {% for i in final_data %}
                         <tr>
                           <td >{{i.symbol}}</td>
-                          <td style="color: {% if i.Return < 0 %}red{% else %}#00e4a3{% endif %};">{{i.Return}} %</td>
-                          <td >{{i.total_trades}}</td>
-                          <td style="color: {% if i.best_trades < 0 %}red{% else %}#00e4a3{% endif %};">{{i.best_trades}} %</td>
-                          <td style="color: {% if i.buy_hold_return < 0 %}red{% else %}#00e4a3{% endif %};">{{i.buy_hold_return}} %</td>
-                          <td style="color: {% if i.Max_dropdown < 0 %}red{% else %}#00e4a3{% endif %};">{{i.Max_dropdown}} %</td>
-                          <td style="color: {% if i.win_rate < 0 %}red{% else %}#00e4a3{% endif %};">{{i.win_rate}} %</td>
-                          <td style="color: {% if i.max_dropdown_duration < 0 %}red{% else %}#00e4a3{% endif %};">{{i.max_dropdown_duration}}</td>
-                         
+                          <td >{{i.price}}</td>
+                          <td >{{i.price_change}} </td>
+                          <td >{{i.percent_change}} </td>
+                          <td >{{i.volume}}</td>
+                          <td >{{i.vol_price}}</td>
+                          <td>{{i.market_cap}}</td>
+                          <td >{{i.technical_rating}}</td>
+                          <td >{{i.sector}}</td>
                         </tr>
                         {% endfor %}
                         
